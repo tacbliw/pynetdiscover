@@ -1,10 +1,12 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import socket
 import struct
 import ifaddr
 import ipaddress
 from pprint import pprint
+import uuid
 
 def run():
     adapters = list(ifaddr.get_adapters())
@@ -27,14 +29,28 @@ def run():
     addresses = ipaddress.ip_network(ip + '/' + str(network_prefix), strict=False).hosts()
 
     # Create socket
-    sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.SOCK_RAW)
+    sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(3))
+    sock.bind('eth0', 0)
 
     for addr in addresses:
         data = packet_builder()
 
 def packet_builder(addr):
     """Build an ARP packet with the IP address, return bytes"""
-    pass
+    packet = b''
+    # Ethernet header
+    packet += b'\xff\xff\xff\xff\xff\xff'  # broadcast MAC address
+    packet += struct.pack('!')
+    packet += struct.pack('!H', 0x0806)
+
+    # ARP message
+
+
+def send_packet(sock, data):
+    sock.send(data)
+
+def recv_packet(sock):
+    sock.recv(1024)
 
 if __name__ == '__main__':
     run()
