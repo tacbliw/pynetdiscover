@@ -44,7 +44,12 @@ def packet_builder(addr):
     packet += struct.pack('!H', 0x0806)
 
     # ARP message
-
+    packet += struct.pack('!H', 0x0001)  # Hardware type (HTYPE)
+    packet += struct.pack('!H', 0x0800)  # Protocol type (PTYPE)
+    packet += struct.pack('!B', 0x0006)  # Hardware address length (HLEN)
+    packet += struct.pack('!B', 0x0004)  # Protocol address length (PLEN)
+    packet += struct.pack('!B', 0x0001)  # Operation (OPER)
+    packet += struct.pack()
 
 def send_packet(sock, data):
     sock.send(data)
