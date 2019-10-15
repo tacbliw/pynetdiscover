@@ -45,7 +45,10 @@ def get_hw_address(ifname):
     
 def get_ip_address(ifname):
     """Return bytes of IP address of an interface"""
-
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    info = fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', ifname[:15].encode('ascii')))
+    return info[20:24]
+    
     
 def packet_builder(src_addr, des_addr, mac):
     """Build an ARP packet with the IP address, return bytes"""
@@ -62,9 +65,13 @@ def packet_builder(src_addr, des_addr, mac):
     packet += struct.pack('!B', 0x0004)  # Protocol address length (PLEN)
     packet += struct.pack('!B', 0x0001)  # Operation (OPER)
     packet += mac  # Sender hardware address (SHA)
-    packet += struct.pack('!', )
+    packet += src_addr  # Sender IP address (SIA)
     packet += b'\x00\x00\x00\x00\x00\x00'  # Target hardware address (THA)
-    packet += struct.pack('', )
+    packet += des_addr  # Target IP address (TIA)
+
+    # Padding to be at least 46 bytes (https://en.wikipedia.org/wiki/Ethernet_frame#Payload)
+    packet += b'\x00' * 18
+    return packet
 
 def send_packet(sock, data):
     sock.send(data)
